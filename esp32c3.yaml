@@ -1,0 +1,87 @@
+substitutions:
+    # Define logging level: NONE, ERROR, WARN, INFO, DEBUG (Default), VERBOSE, VERY_VERBOSE
+  log_level: "INFO"
+    # Define the watchdog timeout or disable by setting to 0 (Default 15min, may use options from https://esphome.io/guides/configuration-types#time)
+  wd_timeout: "15min"
+
+esphome:
+  name: th-gnome
+  friendly_name: th-gnome
+  min_version: 2024.11.0
+  name_add_mac_suffix: true
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+  level: ${log_level}
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+#api:
+#  encryption:
+#    key: !secret esp_api_key
+#  reboot_timeout: ${wd_timeout}
+
+ota:
+  - platform: esphome
+    password: !secret ota_secret
+
+web_server:
+  port: 80
+
+prometheus:  
+
+i2c:
+  sda: GPIO06
+  scl: GPIO07
+  scan: true
+  id: bus_a
+
+status_led:
+  id: led
+  pin: GPIO04
+
+sensor:
+  - platform: bme280_i2c
+    address: 0x76
+    temperature:
+      name: "BME280 Temperature"
+    pressure:
+      name: "BME280 Pressure"
+      accuracy_decimals: 4
+    humidity:
+      name: "BME280 Humidity"
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+      entity_category: diagnostic
+    ssid:
+      name: "Connected SSID"
+      entity_category: diagnostic
+    bssid: 
+      name: "Connected BSSID"
+      entity_category: diagnostic
+    mac_address:
+      name: "Mac Address"
+      entity_category: diagnostic
+      
+  - platform: uptime
+    name: "Uptime"
+    id: sensor_uptime
+    update_interval: 300s
+    entity_category: diagnostic
+
+button:
+  - platform: restart
+    name: Restart_esp
+    id: restart_esp
+    entity_category: config
+    internal: false
